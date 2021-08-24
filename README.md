@@ -55,7 +55,7 @@ Run `npm i` with the included `packages.json` file to install the required packa
 
 ## Usage
 
-After clicking the "Get Started" button, the user is presented with any existing notes that they created previously. In addition, they are provided with a template to create and save a new note.
+After clicking the "Get Started" button, the user is presented with a list of any existing notes that they created previously with the option to delete existing notes. Clicking on an existing note will reveal the details of that note. They are also provided with a template to create and save a new note to the list.
 
 ## License
 
