@@ -33,7 +33,7 @@ app.get("/api/notes", (req, res) => {
 	});
 });
 
-// Adds a new note to the list of notes and returns the newly added note to the client in JSON format. Returns a 400 Bad Request if any required fields are missing from the request.
+// Adds a new note to the collection and returns the newly created note to the client in JSON format.
 app.post("/api/notes", (req, res) => {
 	// Validate the request body
 	const schema = Joi.object({
@@ -42,53 +42,69 @@ app.post("/api/notes", (req, res) => {
 	});
 	const { error } = schema.validate(req.body, { abortEarly: false });
 
-	// Return a 400 Bad Request if we're missing required fields and stop processing the POST
+	// Return a 400 Bad Request response if we're missing any required fields.
 	if (error)
-		return res.status(400).json({ error: error.details.map(e => e.message) });
+		return res
+			.status(400)
+			.json({ status: "error", message: error.details.map(e => e.message) });
 
-	// Create a new note object
+	// Create a new note object to add to the collection.
 	const note = {
 		id: uuidv4(),
 		title: req.body.title,
 		text: req.body.text,
 	};
 
-	// Read the existing notes
-	fs.readFile(dbFilename, (err, data) => {
-		// Handle any error
-		if (err) throw err;
-		// Attempt to parse any existing notes
-		let notes = [];
-		if (data.length > 0) notes = JSON.parse(data);
-		// Add the new note to the datastore and return the new note to the client
-		notes.push(note);
-		writeFile(JSON.stringify(notes, null, 2));
-		res.json(note);
-	});
+	try {
+		// Read the datastore file and add the new note to the collection.
+		fs.readFile(dbFilename, (err, data) => {
+			// Handle any error
+			if (err) throw err;
+
+			let notes = [];
+			// Attempt to parse any existing notes
+			if (data.length > 0) notes = JSON.parse(data);
+			// Add the new note to the collection, write the updated datastore file, and return a 200 OK response with the new note back to the client.
+			notes.push(note);
+			writeFile(JSON.stringify(notes, null, 2));
+			res.status(200).json({ status: "success", body: note });
+		});
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ status: "error", message: "Error creating note" });
+	}
 });
 
 // Deletes a note based on a given ID value.
 app.delete("/api/notes/:id", (req, res) => {
-	// Locate the note based on the given ID
-	fs.readFile(dbFilename, (err, data) => {
-		// Handle any error
-		if (err) throw err;
-		// Attempt to parse any existing notes
-		let notes = [];
-		if (data.length > 0) notes = JSON.parse(data);
-		// Find the note with the given 'id'
-		const note = notes.find(n => n.id === req.params.id);
-		if (!note)
-			return res
-				.status(404)
-				.json({ error: `The note with id '${req.params.id}' was not found.` });
-		// Remove the note from the datastore
-		const index = notes.indexOf(note);
-		notes.splice(index, 1);
-		writeFile(JSON.stringify(notes, null, 2));
-		// Return the deleted note to the client
-		res.json(note);
-	});
+	try {
+		// Read the datastore file. Locate the note based on the given ID.
+		fs.readFile(dbFilename, (err, data) => {
+			// Throw any error up to a higher level.
+			if (err) throw err;
+
+			let notes = [];
+			// Attempt to parse any existing notes
+			if (data.length > 0) notes = JSON.parse(data);
+			// Find the note with the given 'id'
+			const note = notes.find(n => n.id === req.params.id);
+			// If a note with the given 'id' wasn't found, reject the request with a 404 Bad Request.
+			if (!note)
+				return res.status(404).json({
+					status: "error",
+					message: `The note with ID '${req.params.id}' was not found.`,
+				});
+
+			// If we found the note, remove it from the collection, write the updated datastore file, and return a 200 OK response with the deleted note back to the client.
+			const index = notes.indexOf(note);
+			notes.splice(index, 1);
+			writeFile(JSON.stringify(notes, null, 2));
+			res.status(200).json({ status: "success", body: note });
+		});
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ status: "error", message: "Error deleting note" });
+	}
 });
 
 // Default route handler to display the 'index.html' page in the browser.
