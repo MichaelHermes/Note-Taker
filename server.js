@@ -62,7 +62,7 @@ app.post("/api/notes", (req, res) => {
 		if (data.length > 0) notes = JSON.parse(data);
 		// Add the new note to the datastore and return the new note to the client
 		notes.push(note);
-		writeFile(JSON.stringify(notes));
+		writeFile(JSON.stringify(notes, null, 2));
 		res.json(note);
 	});
 });
@@ -85,7 +85,7 @@ app.delete("/api/notes/:id", (req, res) => {
 		// Remove the note from the datastore
 		const index = notes.indexOf(note);
 		notes.splice(index, 1);
-		writeFile(JSON.stringify(notes));
+		writeFile(JSON.stringify(notes, null, 2));
 		// Return the deleted note to the client
 		res.json(note);
 	});

@@ -1,1 +1,17 @@
-[{"id":"89cf057c-3992-4327-b53b-66c80211580f","title":"Note 1","text":"Text 1"},{"id":"21743ca1-32ff-4258-8918-6a58a773da40","title":"Note 3","text":"Text 3"}]
+[
+  {
+    "id": "89cf057c-3992-4327-b53b-66c80211580f",
+    "title": "Note 1",
+    "text": "Text 1"
+  },
+  {
+    "id": "21743ca1-32ff-4258-8918-6a58a773da40",
+    "title": "Note 3",
+    "text": "Text 3"
+  },
+  {
+    "id": "bba5beba-446b-4947-a713-701f575d8084",
+    "title": "Note 4",
+    "text": "Note text"
+  }
+]
