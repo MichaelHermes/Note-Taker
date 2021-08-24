@@ -28,9 +28,7 @@ app.get("/notes", (req, res) =>
 app.get("/api/notes", (req, res) => {
 	fs.readFile(dbFilename, (err, data) => {
 		if (err) throw err;
-		if (data.length > 0) {
-			return res.json(JSON.parse(data));
-		}
+		if (data.length > 0) return res.json(JSON.parse(data));
 		return res.json([]);
 	});
 });
@@ -45,9 +43,8 @@ app.post("/api/notes", (req, res) => {
 	const { error } = schema.validate(req.body, { abortEarly: false });
 
 	// Return a 400 Bad Request if we're missing required fields and stop processing the POST
-	if (error) {
+	if (error)
 		return res.status(400).json({ error: error.details.map(e => e.message) });
-	}
 
 	// Create a new note object
 	const note = {
@@ -62,12 +59,34 @@ app.post("/api/notes", (req, res) => {
 		if (err) throw err;
 		// Attempt to parse any existing notes
 		let notes = [];
-		if (data.length > 0) {
-			notes = JSON.parse(data);
-		}
+		if (data.length > 0) notes = JSON.parse(data);
 		// Add the new note to the datastore and return the new note to the client
 		notes.push(note);
 		writeFile(JSON.stringify(notes));
+		res.json(note);
+	});
+});
+
+// Deletes a note based on a given ID value.
+app.delete("/api/notes/:id", (req, res) => {
+	// Locate the note based on the given ID
+	fs.readFile(dbFilename, (err, data) => {
+		// Handle any error
+		if (err) throw err;
+		// Attempt to parse any existing notes
+		let notes = [];
+		if (data.length > 0) notes = JSON.parse(data);
+		// Find the note with the given 'id'
+		const note = notes.find(n => n.id === req.params.id);
+		if (!note)
+			return res
+				.status(404)
+				.json({ error: `The note with id '${req.params.id}' was not found.` });
+		// Remove the note from the datastore
+		const index = notes.indexOf(note);
+		notes.splice(index, 1);
+		writeFile(JSON.stringify(notes));
+		// Return the deleted note to the client
 		res.json(note);
 	});
 });
@@ -78,6 +97,6 @@ app.get("*", (req, res) =>
 );
 
 // Start our express server listening on the given PORT.
-app.listen(PORT, () => {
-	console.log(`Server is listenting at http://localhost:${PORT}...`);
-});
+app.listen(PORT, () =>
+	console.log(`Server is listenting at http://localhost:${PORT}...`)
+);
