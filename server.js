@@ -13,7 +13,7 @@ app.use(express.json());
 
 // A helper function to write a set of notes to the 'db.json' datastore.
 const writeFile = data => {
-	fs.writeFile(dbFilename, data, err => {
+	fs.writeFile(dbFilename, JSON.stringify(data, null, 2), err => {
 		if (err) throw err;
 		console.log("Data successfully written to file");
 	});
@@ -66,7 +66,7 @@ app.post("/api/notes", (req, res) => {
 			if (data.length > 0) notes = JSON.parse(data);
 			// Add the new note to the collection, write the updated datastore file, and return a 200 OK response with the new note back to the client.
 			notes.push(note);
-			writeFile(JSON.stringify(notes, null, 2));
+			writeFile(notes);
 			res.status(200).json({ status: "success", body: note });
 		});
 	} catch (err) {
@@ -98,7 +98,7 @@ app.delete("/api/notes/:id", (req, res) => {
 			// If we found the note, remove it from the collection, write the updated datastore file, and return a 200 OK response with the deleted note back to the client.
 			const index = notes.indexOf(note);
 			notes.splice(index, 1);
-			writeFile(JSON.stringify(notes, null, 2));
+			writeFile(notes);
 			res.status(200).json({ status: "success", body: note });
 		});
 	} catch (err) {
